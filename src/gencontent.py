@@ -39,8 +39,9 @@ def generate_page(from_path, template_path, dest_path, basepath):
         basepath = basepath + '/'
 
     # Now replace, but we don't want to include the initial slash from 'href="/'
-    template = template.replace('href="/', f'href="{basepath[1:]}')
-    template = template.replace('src="/', f'src="{basepath[1:]}')
+    # Keep the basepath as is, and use it directly in the replacement
+    template = template.replace('href="/', f'href="{basepath}')
+    template = template.replace('src="/', f'src="{basepath}')
 
     dest_dir_path = os.path.dirname(dest_path)
     if dest_dir_path != "":
