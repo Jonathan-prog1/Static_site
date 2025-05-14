@@ -30,8 +30,17 @@ def generate_page(from_path, template_path, dest_path, basepath):
     title = extract_title(markdown_content)
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html)
-    template = template.replace('href="/', 'href="' + basepath)
-    template = template.replace('src="/', 'src="' + basepath)
+    # If basepath doesn't start with a slash, add one
+    if not basepath.startswith('/'):
+        basepath = '/' + basepath
+
+    # If basepath doesn't end with a slash, add one
+    if not basepath.endswith('/'):
+        basepath = basepath + '/'
+
+    # Now replace, but we don't want to include the initial slash from 'href="/'
+    template = template.replace('href="/', f'href="{basepath[1:]}')
+    template = template.replace('src="/', f'src="{basepath[1:]}')
 
     dest_dir_path = os.path.dirname(dest_path)
     if dest_dir_path != "":

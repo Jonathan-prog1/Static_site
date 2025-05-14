@@ -1,7 +1,9 @@
 from enum import Enum
+
 from htmlnode import ParentNode
 from inline_markdown import text_to_textnodes
 from textnode import text_node_to_html_node, TextNode, TextType
+
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -10,6 +12,7 @@ class BlockType(Enum):
     QUOTE = "quote"
     OLIST = "ordered_list"
     ULIST = "unordered_list"
+
 
 def markdown_to_blocks(markdown):
     blocks = markdown.split("\n\n")
@@ -20,6 +23,7 @@ def markdown_to_blocks(markdown):
         block = block.strip()
         filtered_blocks.append(block)
     return filtered_blocks
+
 
 def block_to_block_type(block):
     lines = block.split("\n")
@@ -47,7 +51,6 @@ def block_to_block_type(block):
         return BlockType.OLIST
     return BlockType.PARAGRAPH
 
-# All the logic to turn markdown to HTML
 
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
