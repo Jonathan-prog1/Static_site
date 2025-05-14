@@ -1,9 +1,12 @@
 import unittest
-from markdown_blocks import (
-    markdown_to_html_node,
-    markdown_to_blocks,
-    block_to_block_type,
-    BlockType,
+from inline_markdown import (
+    split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
+    text_to_textnodes,
+    extract_markdown_links,
+    extract_markdown_images,
+    extract_title,
 )
 
 from textnode import TextNode, TextType
@@ -68,7 +71,7 @@ class TestInlineMarkdown(unittest.TestCase):
         node = TextNode("**bold** and _italic_", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         new_nodes = split_nodes_delimiter(new_nodes, "_", TextType.ITALIC)
-        self.assertListEqual(
+        self.assertEqual(
             [
                 TextNode("bold", TextType.BOLD),
                 TextNode(" and ", TextType.TEXT),
@@ -88,6 +91,7 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             new_nodes,
         )
+
     def test_extract_markdown_images(self):
         matches = extract_markdown_images(
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
@@ -105,6 +109,7 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             matches,
         )
+
     def test_split_image(self):
         node = TextNode(
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)",
@@ -166,6 +171,7 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             new_nodes,
         )
+
     def test_text_to_textnodes(self):
         nodes = text_to_textnodes(
             "This is **text** with an _italic_ word and a `code block` and an ![image](https://i.imgur.com/zjjcJKZ.png) and a [link](https://boot.dev)"
@@ -185,104 +191,23 @@ class TestInlineMarkdown(unittest.TestCase):
             ],
             nodes,
         )
-
-    def test_paragraph(self):
-        md = """
-This is **bolded** paragraph
-text in a p
-tag here
-
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p></div>",
-        )
-
-    def test_paragraphs(self):
-        md = """
-This is **bolded** paragraph
-text in a p
-tag here
-
-This is another paragraph with _italic_ text and `code` here
-
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
-        )
-
-    def test_lists(self):
-        md = """
-- This is a list
-- with items
-- and _more_ items
-
-1. This is an `ordered` list
-2. with items
-3. and more items
-
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><ul><li>This is a list</li><li>with items</li><li>and <i>more</i> items</li></ul><ol><li>This is an <code>ordered</code> list</li><li>with items</li><li>and more items</li></ol></div>",
-        )
-
-    def test_headings(self):
-        md = """
-# this is an h1
-
-this is paragraph text
-
-## this is an h2
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><h1>this is an h1</h1><p>this is paragraph text</p><h2>this is an h2</h2></div>",
-        )
-
-    def test_blockquote(self):
-        md = """
-> This is a
-> blockquote block
-
-this is paragraph text
-
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><blockquote>This is a blockquote block</blockquote><p>this is paragraph text</p></div>",
-        )
-
-    def test_code(self):
-        md = """
-```
-This is text that _should_ remain
-the **same** even with inline stuff
-```
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
-        )
+class TestExtractTitle(unittest.TestCase):
+    def test_extract_title_valid(self):
+        markdown = "# This is a title\nSome content"
+        self.assertEqual(extract_title(markdown), "This is a title")
+    
+    def test_extract_title_with_spaces(self):
+        markdown = "#    Title with spaces    \nContent"
+        self.assertEqual(extract_title(markdown), "Title with spaces")
+    
+    def test_extract_title_missing(self):
+        markdown = "No title here\nJust content"
+        with self.assertRaises(Exception):
+            extract_title(markdown)
+    
+    def test_extract_title_multiple_headers(self):
+        markdown = "# First title\n## Second title"
+        self.assertEqual(extract_title(markdown), "First title")
 
 if __name__ == "__main__":
     unittest.main()

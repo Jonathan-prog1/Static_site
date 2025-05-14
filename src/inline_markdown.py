@@ -94,3 +94,16 @@ def extract_markdown_links(text):
     matches = re.findall(pattern, text)
     return matches
 
+def extract_title(markdown):
+    # Split the markdown content into lines
+    lines = markdown.split("\n")
+    
+    # Look for a line that starts with a single "#"
+    for line in lines:
+        if line.startswith("# "):
+            # Remove the "# " and any extra whitespace
+            return line[2:].strip()
+    
+    # If we didn't find a title, raise an exception
+    raise Exception("No h1 header found in the markdown")
+
